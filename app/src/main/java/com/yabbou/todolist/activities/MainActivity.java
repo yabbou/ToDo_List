@@ -19,7 +19,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
 import com.yabbou.todolist.R;
 import com.yabbou.todolist.classes.Utils;
 
@@ -31,13 +30,12 @@ import static com.yabbou.todolist.classes.Utils.sREQUEST_CODE_SETTINGS;
 public class MainActivity extends AppCompatActivity {
     private ArrayAdapter model;
     private ArrayList<String> items;
-
     private EditText etNewItemText;
 
-    private boolean mPrefUseAutoSave, mPrefShowErrors;
-    private String mKeyAutoSave, mKeyShowErrors;
-
+    private static boolean mPrefUseAutoSave;
+    private String mKeyAutoSave;
     private final String mKeyPrefsName = "PREFS";
+
     private static final String TAG = "MainActivity";
 
     @Override
@@ -47,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
         initVars();
-        setupFAB();
 
+        setupFAB();
         setupPreferences(savedInstanceState);
     }
 
@@ -56,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
         model = getStringArrayAdapter();
         ListView lvItems = findViewById(id.list_todo);
         lvItems.setAdapter(model);
+    }
+
+    private ArrayAdapter<String> getStringArrayAdapter() {
+        return new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
     }
 
     private void setupFAB() {
@@ -85,10 +87,10 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.root_preferences, true);
 
         setFieldReferencesToResFileValues();
-        setFieldReferencesToViewsAndSnackBar();
+        setFieldReferencesToViews();
 
         restoreAppSettingsFromPrefs();
-        doInitialStartGame(savedInstanceState);
+        doInitialSetup(savedInstanceState);
     }
 
     /* menu */
@@ -128,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
     /* add & delete list elements */
 
     private class OnAddClickListener implements DialogInterface.OnClickListener {
+
         @Override
         public void onClick(DialogInterface dialog, int which) {
             String itemText = etNewItemText.getText().toString();
@@ -146,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
         model.remove(itemText); //todo: remove from items array using index, instead of directly from model
         model.notifyDataSetChanged();
     }
+
 
     /* save state on rotation */
 
@@ -166,65 +170,64 @@ public class MainActivity extends AppCompatActivity {
 
     /* preferences */
 
-    private void setFieldReferencesToResFileValues() {
-        mKeyAutoSave = getString(R.string.key_use_auto_save);
-        mKeyShowErrors = getString(R.string.key_show_turn_specific_error_messages);
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        return super.onPrepareOptionsMenu(menu);
     }
 
-    private void setFieldReferencesToViewsAndSnackBar() {
+    private void setFieldReferencesToResFileValues() {
+        mKeyAutoSave = getString(R.string.key_use_auto_save);
+    }
+
+    private void setFieldReferencesToViews() {
+        //fill
     }
 
     private void restoreAppSettingsFromPrefs() {
         SharedPreferences preferences = getSharedPreferences(mKeyPrefsName, MODE_PRIVATE);
-
         mPrefUseAutoSave = preferences.getBoolean(mKeyAutoSave, true);
-        mPrefShowErrors = preferences.getBoolean(mKeyShowErrors, true);
     }
 
-    private void doInitialStartGame(Bundle savedInstanceState) {
+    private void doInitialSetup(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             restoreSavedStateFromBundle(savedInstanceState);
         } else if (mPrefUseAutoSave && isValidStateInPrefs()) {
             restoreSavedStateFromPrefs();
         } else {
-            startNewGame();
+            setupList();
         }
     }
 
     private void restoreSavedStateFromBundle(Bundle savedInstanceState) {
-
-    }
-
-    private void initAdapter(ArrayAdapter adapter, boolean[] checks, int msgID) {
-        model = adapter != null ? adapter : getStringArrayAdapter();
-    }
-
-    private ArrayAdapter<String> getStringArrayAdapter() {
-        return new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
+        //fill
     }
 
     private boolean isValidStateInPrefs() {
-
+        //fill
         return false;
     }
 
     private void restoreSavedStateFromPrefs() {
+        //fill
     }
 
-    private void startNewGame() {
+    private void setupList() {
+        //do something...
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        SharedPreferences preferences = getSharedPreferences (mKeyPrefsName, MODE_PRIVATE);
-// Create an Editor object to write changes to the preferences object above
-        SharedPreferences.Editor editor = preferences.edit ();
-// clear whatever was set last time
-        editor.clear ();
-// save "autoSave" preference
-        editor.putBoolean (mKeyAutoSave, mPrefUseAutoSave);
-// apply the changes to the XML file in the device's storage
-        editor.apply ();
+        SharedPreferences preferences = getSharedPreferences(mKeyPrefsName, MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+
+        editor.clear();
+        editor.putBoolean(mKeyAutoSave, mPrefUseAutoSave);
+        editor.apply();
     }
+
+    public static void setmPrefUseAutoSave(boolean mPrefUseAutoSave) { //todo: move all pref code to settings activity
+        MainActivity.mPrefUseAutoSave = mPrefUseAutoSave;
+    }
+
 }
