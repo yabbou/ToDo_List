@@ -22,13 +22,17 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.yabbou.todolist.R;
 import com.yabbou.todolist.classes.Utils;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import static com.yabbou.todolist.R.*;
 import static com.yabbou.todolist.classes.Utils.sREQUEST_CODE_SETTINGS;
 
 public class MainActivity extends AppCompatActivity {
-    private ArrayAdapter model;
+    private ArrayAdapter<String> model;
     private ArrayList<String> items;
     private EditText etNewItemText;
 
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(layout.activity_main);
 
-        items = new ArrayList<>();
+        readListItems();
         initVars();
 
         setupFAB();
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
         setFieldReferencesToViews();
 
         restoreAppSettingsFromPrefs();
-        doInitialSetup(savedInstanceState);
+//        doInitialSetup(savedInstanceState);
     }
 
     /* menu */
@@ -136,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
             String itemText = etNewItemText.getText().toString();
             items.add(itemText);
             model.notifyDataSetChanged();
+            writeListItems();
 
             Log.d(TAG, "Item added to list: " + itemText);
         }
@@ -148,8 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         model.remove(itemText); //todo: remove from items array using index, instead of directly from model
         model.notifyDataSetChanged();
+        writeListItems();
     }
-
 
     /* save state on rotation */
 
@@ -188,31 +193,54 @@ public class MainActivity extends AppCompatActivity {
         mPrefUseAutoSave = preferences.getBoolean(mKeyAutoSave, true);
     }
 
-    private void doInitialSetup(Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            restoreSavedStateFromBundle(savedInstanceState);
-        } else if (mPrefUseAutoSave && isValidStateInPrefs()) {
-            restoreSavedStateFromPrefs();
-        } else {
-            setupList();
+//    private void doInitialSetup(Bundle savedInstanceState) {
+//        if (savedInstanceState != null) {
+//            restoreSavedStateFromBundle(savedInstanceState);
+//        } else if (mPrefUseAutoSave && isValidStateInPrefs()) {
+//            restoreSavedStateFromPrefs();
+//        } else {
+//            setupList();
+//        }
+//    }
+//
+//    private void restoreSavedStateFromBundle(Bundle savedInstanceState) {
+//        //fill
+//    }
+//
+//    private boolean isValidStateInPrefs() {
+//        //fill
+//        return false;
+//    }
+//
+//    private void restoreSavedStateFromPrefs() {
+//        //fill
+//    }
+//
+//    private void setupList() {
+//        //do something...
+//    }
+
+    /**
+     * Note: Apache commons version {@code FileUtils}
+     */
+    private void readListItems() {
+        File filesDir = getFilesDir();
+        File todoFile = new File(filesDir, "todo.txt");
+        try {
+            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+        } catch (IOException e) {
+            items = new ArrayList<>();
         }
     }
 
-    private void restoreSavedStateFromBundle(Bundle savedInstanceState) {
-        //fill
-    }
-
-    private boolean isValidStateInPrefs() {
-        //fill
-        return false;
-    }
-
-    private void restoreSavedStateFromPrefs() {
-        //fill
-    }
-
-    private void setupList() {
-        //do something...
+    private void writeListItems() { //todo: make encrypted
+        File filesDir = getFilesDir();
+        File todoFile = new File(filesDir, "todo.txt");
+        try {
+            FileUtils.writeLines(todoFile, items);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
