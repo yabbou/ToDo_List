@@ -36,10 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> items;
     private EditText etNewItemText;
 
-    private static boolean mPrefUseAutoSave;
-    private String mKeyAutoSave;
-    private final String mKeyPrefsName = "PREFS";
-
     private static final String TAG = "MainActivity";
 
     @Override
@@ -51,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         initVars();
 
         setupFAB();
-        setupPreferences(savedInstanceState);
+        setupPreferences();
     }
 
     private void initVars() {
@@ -87,14 +83,11 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupPreferences(Bundle savedInstanceState) {
+    private void setupPreferences() {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.root_preferences, true);
 
         setFieldReferencesToResFileValues();
-        setFieldReferencesToViews();
-
         restoreAppSettingsFromPrefs();
-//        doInitialSetup(savedInstanceState);
     }
 
     /* menu */
@@ -121,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void showSettings() { //todo: full settings pages
+    private void showSettings() {
         Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
         startActivityForResult(intent, sREQUEST_CODE_SETTINGS);
     }
@@ -181,44 +174,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFieldReferencesToResFileValues() {
-        mKeyAutoSave = getString(R.string.key_use_auto_save);
-    }
-
-    private void setFieldReferencesToViews() {
-        //fill
+        SettingsActivity.setmKeyAutoSave(getString(R.string.key_use_auto_save));
     }
 
     private void restoreAppSettingsFromPrefs() {
-        SharedPreferences preferences = getSharedPreferences(mKeyPrefsName, MODE_PRIVATE);
-        mPrefUseAutoSave = preferences.getBoolean(mKeyAutoSave, true);
+        SharedPreferences preferences = getSharedPreferences(SettingsActivity.getmKeyPrefsName(), MODE_PRIVATE);
+        SettingsActivity.setmPrefUseAutoSave(preferences.getBoolean(SettingsActivity.getmKeyAutoSave(), true));
     }
-
-//    private void doInitialSetup(Bundle savedInstanceState) {
-//        if (savedInstanceState != null) {
-//            restoreSavedStateFromBundle(savedInstanceState);
-//        } else if (mPrefUseAutoSave && isValidStateInPrefs()) {
-//            restoreSavedStateFromPrefs();
-//        } else {
-//            setupList();
-//        }
-//    }
-//
-//    private void restoreSavedStateFromBundle(Bundle savedInstanceState) {
-//        //fill
-//    }
-//
-//    private boolean isValidStateInPrefs() {
-//        //fill
-//        return false;
-//    }
-//
-//    private void restoreSavedStateFromPrefs() {
-//        //fill
-//    }
-//
-//    private void setupList() {
-//        //do something...
-//    }
 
     /**
      * Note: Apache commons version {@code FileUtils}
@@ -227,17 +189,23 @@ public class MainActivity extends AppCompatActivity {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+            items = SettingsActivity.hasCheckedAutoSave() ?
+                    new ArrayList<String>(FileUtils.readLines(todoFile)) :
+                    initToDoList();
         } catch (IOException e) {
-            items = new ArrayList<>();
+            items = initToDoList();
         }
+    }
+
+    private ArrayList<String> initToDoList() {
+        return new ArrayList<>();
     }
 
     private void writeListItems() { //todo: make encrypted
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            FileUtils.writeLines(todoFile, items);
+            FileUtils.writeLines(todoFile, SettingsActivity.hasCheckedAutoSave() ? items : initToDoList());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -246,16 +214,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        SharedPreferences preferences = getSharedPreferences(mKeyPrefsName, MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences(SettingsActivity.getmKeyPrefsName(), MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.clear();
-        editor.putBoolean(mKeyAutoSave, mPrefUseAutoSave);
+        editor.putBoolean(SettingsActivity.getmKeyAutoSave(), SettingsActivity.hasCheckedAutoSave());
         editor.apply();
     }
-
-    public static void setmPrefUseAutoSave(boolean mPrefUseAutoSave) { //todo: move all pref code to settings activity
-        MainActivity.mPrefUseAutoSave = mPrefUseAutoSave;
-    }
-
 }
