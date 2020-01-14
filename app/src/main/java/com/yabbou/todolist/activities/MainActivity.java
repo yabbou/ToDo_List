@@ -51,13 +51,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initVars() {
-        model = getStringArrayAdapter();
+        model = new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
         ListView lvItems = findViewById(id.list_todo);
-        lvItems.setAdapter(model);
-    }
 
-    private ArrayAdapter<String> getStringArrayAdapter() {
-        return new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
+        TextView emptyText = findViewById(R.id.empty);
+        lvItems.setEmptyView(emptyText);
+
+        lvItems.setAdapter(model);
     }
 
     private void setupFAB() {
@@ -189,16 +189,11 @@ public class MainActivity extends AppCompatActivity {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            items = SettingsActivity.hasCheckedAutoSave() ?
-                    new ArrayList<String>(FileUtils.readLines(todoFile)) :
-                    initToDoList();
+            items = new ArrayList<String>(FileUtils.readLines(todoFile));
         } catch (IOException e) {
             items = initToDoList();
         }
-    }
 
-    private ArrayList<String> initToDoList() {
-        return new ArrayList<>();
     }
 
     private void writeListItems() { //todo: make encrypted
@@ -209,6 +204,10 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private ArrayList<String> initToDoList() {
+        return new ArrayList<>();
     }
 
     @Override

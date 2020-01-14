@@ -26,4 +26,17 @@
         android:id="@+id/fab"
         style="@style/FAB" />
 
+    <TextView
+        android:id="@+id/empty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_alignTop="@+id/list_todo"
+        android:layout_gravity="center"
+
+        android:layout_marginTop="40dp"
+        android:textSize="@dimen/item_text_size"
+        android:gravity="center"
+        android:text="@string/empty_msg" />
+
 </RelativeLayout>

@@ -30,6 +30,7 @@ public class Utils {
     }
 
     // Location
+
     public static void promptToAllowPermissionRequest(Activity activity) {
         DialogInterface.OnClickListener okListener =
                 getLocationPromptOkOnClickListener(activity);
@@ -56,6 +57,7 @@ public class Utils {
 
 
     // Night Mode
+
     public static void getLocationPermission(Activity activity, int code) {
         // Here, activity is the current activity
         if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
