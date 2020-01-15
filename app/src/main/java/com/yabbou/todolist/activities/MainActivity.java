@@ -1,10 +1,5 @@
 package com.yabbou.todolist.activities;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceManager;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,6 +13,11 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.yabbou.todolist.R;
 import com.yabbou.todolist.classes.Utils;
@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.yabbou.todolist.R.*;
+import static com.yabbou.todolist.R.id;
+import static com.yabbou.todolist.R.layout;
+import static com.yabbou.todolist.R.string;
 import static com.yabbou.todolist.classes.Utils.sREQUEST_CODE_SETTINGS;
 
 public class MainActivity extends AppCompatActivity {
@@ -51,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initVars() {
-        model = new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
+        model = new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);;
         ListView lvItems = findViewById(id.list_todo);
 
         TextView emptyText = findViewById(R.id.empty);
@@ -87,41 +89,7 @@ public class MainActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.root_preferences, true);
 
         setFieldReferencesToResFileValues();
-        restoreAppSettingsFromPrefs();
-    }
-
-    /* menu */
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        switch (id) {
-            case R.id.menu_settings:
-                showSettings();
-                return true;
-            case R.id.menu_about:
-                showAbout();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void showSettings() {
-        Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
-        startActivityForResult(intent, sREQUEST_CODE_SETTINGS);
-    }
-
-    public void showAbout() {
-        Utils.showInfoDialog(MainActivity.this, R.string.about_dialog_title,
-                R.string.about_dialog_banner);
+        restorePreferences();
     }
 
     /* add & delete list elements */
@@ -166,6 +134,40 @@ public class MainActivity extends AppCompatActivity {
         model.notifyDataSetChanged();
     }
 
+    /* menu */
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (id) {
+            case R.id.menu_settings:
+                showSettings();
+                return true;
+            case R.id.menu_about:
+                showAbout();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void showSettings() {
+        Intent intent = new Intent(getApplicationContext(), SettingsActivity.class);
+        startActivityForResult(intent, sREQUEST_CODE_SETTINGS);
+    }
+
+    public void showAbout() {
+        Utils.showInfoDialog(MainActivity.this, R.string.about_dialog_title,
+                R.string.about_dialog_banner);
+    }
+
     /* preferences */
 
     @Override
@@ -173,13 +175,25 @@ public class MainActivity extends AppCompatActivity {
         return super.onPrepareOptionsMenu(menu);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == sREQUEST_CODE_SETTINGS) {
+            restorePreferences();
+        } else {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
     private void setFieldReferencesToResFileValues() {
         SettingsActivity.setmKeyAutoSave(getString(R.string.key_use_auto_save));
     }
 
-    private void restoreAppSettingsFromPrefs() {
-        SharedPreferences preferences = getSharedPreferences(SettingsActivity.getmKeyPrefsName(), MODE_PRIVATE);
-        SettingsActivity.setmPrefUseAutoSave(preferences.getBoolean(SettingsActivity.getmKeyAutoSave(), true));
+    private void restorePreferences() {
+        SharedPreferences preferences =
+                PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+        String currentKey = getString(string.key_use_auto_save);
+        SettingsActivity.setmPrefUseAutoSave(preferences.getBoolean(currentKey, true));
     }
 
     /**
@@ -189,11 +203,16 @@ public class MainActivity extends AppCompatActivity {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            items = new ArrayList<String>(FileUtils.readLines(todoFile));
+            items = SettingsActivity.hasCheckedAutoSave() ?
+                    new ArrayList<String>(FileUtils.readLines(todoFile)) :
+                    initToDoList();
         } catch (IOException e) {
             items = initToDoList();
         }
+    }
 
+    private ArrayList<String> initToDoList() {
+        return new ArrayList<>();
     }
 
     private void writeListItems() { //todo: make encrypted
@@ -204,10 +223,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private ArrayList<String> initToDoList() {
-        return new ArrayList<>();
     }
 
     @Override
