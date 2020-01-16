@@ -220,7 +220,6 @@ public class MainActivity extends AppCompatActivity {
         return new ArrayList<>();
     }
 
-    //todo: encrypt list
     private void writeListItems() {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");

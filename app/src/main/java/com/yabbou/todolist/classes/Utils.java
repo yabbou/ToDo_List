@@ -57,8 +57,7 @@ public class Utils {
     }
 
     @NonNull
-    private static AlertDialog.Builder getDialogBasicsADB(Context context, String strTitle,
-                                                          String strMsg) {
+    private static AlertDialog.Builder getDialogBasicsADB(Context context, String strTitle, String strMsg) {
         // Create the AlertDialog.Builder object
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
 
@@ -77,13 +76,13 @@ public class Utils {
         return new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
             }
         };
     }
 
 
     @SuppressWarnings("WeakerAccess")
+    /**Not used in this project*/
     public static void showOkCancelDialog(Context context, String strTitle, String strMsg,
                                           DialogInterface.OnClickListener okListener,
                                           DialogInterface.OnClickListener cancelListener) {
