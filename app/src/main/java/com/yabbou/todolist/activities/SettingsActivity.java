@@ -12,10 +12,6 @@ import com.yabbou.todolist.R;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private static boolean mPrefUseAutoSave = true;
-    private static final String mKeyPrefsName = "PREFS";
-    private static String mKeyAutoSave;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,30 +47,6 @@ public class SettingsActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    /* getters */
-
-    public static boolean hasCheckedAutoSave() {
-        return mPrefUseAutoSave;
-    }
-
-    public static String getmKeyAutoSave() {
-        return mKeyAutoSave;
-    }
-
-    public static String getmKeyPrefsName() {
-        return mKeyPrefsName;
-    }
-
-    /* setters */
-
-    public static void setmPrefUseAutoSave(boolean preference) {
-        mPrefUseAutoSave = preference;
-    }
-
-    public static void setmKeyAutoSave(String key) {
-        mKeyAutoSave = key;
     }
 
     /* fragment */

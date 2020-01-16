@@ -20,6 +20,7 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.yabbou.todolist.R;
+import com.yabbou.todolist.classes.PreferenceBuilder;
 import com.yabbou.todolist.classes.Utils;
 
 import org.apache.commons.io.FileUtils;
@@ -38,10 +39,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> items;
     private EditText etNewItemText;
 
+    private PreferenceBuilder preference;
+
     private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setupPreferences();
+
         super.onCreate(savedInstanceState);
         setContentView(layout.activity_main);
 
@@ -49,11 +54,10 @@ public class MainActivity extends AppCompatActivity {
         initVars();
 
         setupFAB();
-        setupPreferences();
     }
 
     private void initVars() {
-        model = new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);;
+        model = new ArrayAdapter<>(this, layout.todo_item, id.item_title, items);
         ListView lvItems = findViewById(id.list_todo);
 
         TextView emptyText = findViewById(R.id.empty);
@@ -86,6 +90,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupPreferences() {
+        preference = new PreferenceBuilder();
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.root_preferences, true);
 
         setFieldReferencesToResFileValues();
@@ -185,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setFieldReferencesToResFileValues() {
-        SettingsActivity.setmKeyAutoSave(getString(R.string.key_use_auto_save));
+        preference.setmKeyAutoSave(getString(R.string.key_use_auto_save));
     }
 
     private void restorePreferences() {
@@ -193,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         String currentKey = getString(string.key_use_auto_save);
-        SettingsActivity.setmPrefUseAutoSave(preferences.getBoolean(currentKey, true));
+        preference.setmPrefUseAutoSave(preferences.getBoolean(currentKey, true));
     }
 
     /**
@@ -203,7 +208,7 @@ public class MainActivity extends AppCompatActivity {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            items = SettingsActivity.hasCheckedAutoSave() ?
+            items = preference.hasCheckedAutoSave() ?
                     new ArrayList<String>(FileUtils.readLines(todoFile)) :
                     initToDoList();
         } catch (IOException e) {
@@ -215,11 +220,12 @@ public class MainActivity extends AppCompatActivity {
         return new ArrayList<>();
     }
 
-    private void writeListItems() { //todo: make encrypted
+    //todo: encrypt list
+    private void writeListItems() {
         File filesDir = getFilesDir();
         File todoFile = new File(filesDir, "todo.txt");
         try {
-            FileUtils.writeLines(todoFile, SettingsActivity.hasCheckedAutoSave() ? items : initToDoList());
+            FileUtils.writeLines(todoFile, preference.hasCheckedAutoSave() ? items : initToDoList());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -228,11 +234,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        SharedPreferences preferences = getSharedPreferences(SettingsActivity.getmKeyPrefsName(), MODE_PRIVATE);
+        SharedPreferences preferences = getSharedPreferences(preference.getmKeyPrefsName(), MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
 
         editor.clear();
-        editor.putBoolean(SettingsActivity.getmKeyAutoSave(), SettingsActivity.hasCheckedAutoSave());
+        editor.putBoolean(preference.getmKeyAutoSave(), preference.hasCheckedAutoSave());
         editor.apply();
     }
 }
